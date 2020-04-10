@@ -1,0 +1,11 @@
+# app
+networkx==2.4
+
+# test
+pytest==5.4.1
+
+# linter
+flake8==3.7.9
+
+# tools 
+black==19.10b0
