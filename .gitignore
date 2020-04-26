@@ -1,0 +1,14 @@
+# python
+__pycache__/
+
+# env
+venv/
+.venv/
+
+# pycharm 
+.idea/codeStyles
+.idea/workspace.xml
+
+
+out/
+.pytest_cache
