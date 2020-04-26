@@ -73,8 +73,10 @@ def generate_simple_random_graph(
     Returns:
         Random geometric graph.
     """
-    if vertices_number != len(positions):
-        Exception("Number of vertices and length of positions differ.")
+
+    if positions is not None:
+        if vertices_number != len(positions):
+            Exception("Number of vertices and length of positions differ.")
 
     # generate positions if not given
     if positions is None:
