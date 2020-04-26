@@ -6,6 +6,9 @@ venv/
 .venv/
 
 # pycharm 
-.idea/
+.idea/codeStyles
+.idea/workspace.xml
 
 
+out/
+.pytest_cache
