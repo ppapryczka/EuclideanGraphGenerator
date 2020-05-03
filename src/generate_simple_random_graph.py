@@ -1,12 +1,16 @@
-import networkx as nx
-import numpy as np
 import math
-import matplotlib.pyplot as plt
-
+import time
 from typing import Sequence, List, Union
 
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
 
-def distance(point1: Sequence[float], point2: Sequence[float]) -> float:
+from kd_tree import create_standalone_kd_node, query_pairs, kd_tree
+
+
+def distance(point1: Sequence[float],
+             point2: Sequence[float]) -> float:
     """
     Count euclidean distance between ``point1`` and ``point2``.
 
@@ -20,9 +24,9 @@ def distance(point1: Sequence[float], point2: Sequence[float]) -> float:
     return math.hypot(point2[0] - point1[0], point2[1] - point1[1])
 
 
-def generate_point_positions(
-    low_boundary: float, high_boundary: float, size: int
-) -> List:
+def generate_point_positions(low_boundary: float,
+                             high_boundary: float,
+                             size: int) -> List:
     """
     Generate points positions using ``np.random.uniform``
     in range [``low_boundary``, ``high_boundary``).
@@ -57,9 +61,10 @@ def connect_close_enough_edges_(g: nx.Graph, radius: float) -> None:
                 g.add_edge(n1, n2)
 
 
-def generate_simple_random_graph(
-    vertices_number: int, radius: float, positions: Union[List, None] = None
-) -> nx.Graph:
+def generate_simple_random_graph(vertices_number: int,
+                                 radius: float,
+                                 positions: Union[List, None] = None,
+                                 use_kd_tree: bool = False) -> nx.Graph:
     """
     Generate positions using ``generate_point_positions`` if ``positions``
     is None, add nodes with positions information, connect nodes closer than
@@ -69,6 +74,7 @@ def generate_simple_random_graph(
         vertices_number: Number of vertices.
         radius: Minimal distance between nodes.
         positions: Optional positions list.
+        use_kd_tree: Use kd tree for connecting nodes. Will iterate through all node pairs if False.
 
     Returns:
         Random geometric graph.
@@ -87,8 +93,16 @@ def generate_simple_random_graph(
     for idx, position in enumerate(positions):
         g.add_node(idx, pos=position)
 
-    # connect nodes
-    connect_close_enough_edges_(g, radius)
+    if use_kd_tree:
+        kd_nodes = list()
+        for idx, position in enumerate(positions):
+            kd_nodes.append(create_standalone_kd_node(idx, position))
+        tree = kd_tree(kd_nodes)
+        pairs = query_pairs(tree, radius)
+        for i, edge in enumerate(pairs):
+            g.add_edge(edge[0], edge[1])
+    else:
+        connect_close_enough_edges_(g, radius)
 
     return g
 
@@ -106,7 +120,32 @@ def generate_simple_random_graph(
 
 
 if __name__ == "__main__":
-    g = generate_simple_random_graph(100, 0.1)
-    pos = nx.get_node_attributes(g, "pos")
-    nx.draw_networkx(g, pos, node_size=10, with_labels=False)
+    n = 10000
+    r = 0.1
+
+    positions = generate_point_positions(0., 1., n)
+
+    start = time.time()
+    g_kd = generate_simple_random_graph(n, r, positions=positions, use_kd_tree=True)
+    end = time.time()
+    time_kd = end - start
+
+    start = time.time()
+    g_n2 = generate_simple_random_graph(n, r, positions=positions, use_kd_tree=False)
+    end = time.time()
+    time_n2 = end - start
+
+    print("Number of nodes: {}".format(n))
+    print("With radius:     {}".format(n))
+    print("With kd tree:    {} seconds".format(time_kd))
+    print("With n^2 search: {} seconds".format(time_n2))
+    print("With kd edges:   {}".format(len(g_kd.edges)))
+    print("With n^2 edges:  {}".format(len(g_n2.edges)))
+
+    pos = nx.get_node_attributes(g_kd, "pos")
+    nx.draw_networkx(g_kd, pos, node_size=4, with_labels=False)
+    plt.show()
+
+    pos = nx.get_node_attributes(g_n2, "pos")
+    nx.draw_networkx(g_n2, pos, node_size=4, with_labels=False)
     plt.show()
