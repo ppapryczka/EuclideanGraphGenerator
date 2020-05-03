@@ -136,7 +136,7 @@ if __name__ == "__main__":
     time_n2 = end - start
 
     print("Number of nodes: {}".format(n))
-    print("With radius:     {}".format(n))
+    print("With radius:     {}".format(r))
     print("With kd tree:    {} seconds".format(time_kd))
     print("With n^2 search: {} seconds".format(time_n2))
     print("With kd edges:   {}".format(len(g_kd.edges)))
