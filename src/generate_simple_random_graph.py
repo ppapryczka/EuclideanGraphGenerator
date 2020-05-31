@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
     # -------------------------------------------------------------------------------------------------
     # Checking statistical properties of graphs
-    number_of_graphs = 1
+    number_of_graphs = 1000
     n = 100
     r = 0.1
     graphs = list()
@@ -276,7 +276,7 @@ if __name__ == "__main__":
     print("Średnia liczba składowych spójnych:     {}".format(mean_number_of_components))
     print("Średnia liczba wierzchołków składowej:  {}".format(mean_number_of_nodes_in_component))
     print("Średnia liczba krawędzi składowej:      {}".format(mean_number_of_edges_in_component))
-    print("Średnia gęstość skłądowej:              {}".format(mean_density_of_component))
+    print("Średnia gęstość składowej:              {}".format(mean_density_of_component))
     print("Średnia liczba drzew w grafie:          {}".format(mean_number_of_trees))
 
     print("-------------------------------------------------------------------")
