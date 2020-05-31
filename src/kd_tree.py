@@ -5,7 +5,7 @@ from typing import Tuple, List
 import numpy
 
 
-class KdTreeNode(namedtuple('Node', 'id rectangle_min rectangle_max location left_child center right_child children')):
+class KdTreeNode(namedtuple('Node', 'id rectangle_min rectangle_max location left_child self_node right_child children')):
 
     def is_leaf(self):
         return len(self.children) == 1
@@ -37,7 +37,7 @@ def create_standalone_kd_node(idx: int,
                       rectangle_max=numpy.asarray(position).astype(float),
                       location=position,
                       left_child=None,
-                      center=None,
+                      self_node=None,
                       right_child=None,
                       children=[idx])
 
@@ -123,21 +123,21 @@ def query_pairs(tree: KdTreeNode, radius: float):
         elif node1.is_leaf():
             # Node 1 is leaf
             # Not entire Node 2 is within radius limit
-            # Node 2 is split
-            check_recursively(node1, node2.center)
+            # Node 2 must be split
+            check_recursively(node1, node2.self_node)
             check_recursively(node1, node2.left_child)
             check_recursively(node1, node2.right_child)
         elif node2.is_leaf():
             # Node 2 is leaf
             # Not entire Node 1 is within radius limit
-            # Node 1 is split
-            check_recursively(node2, node1.center)
+            # Node 1 must be split
+            check_recursively(node2, node1.self_node)
             check_recursively(node2, node1.left_child)
             check_recursively(node2, node1.right_child)
         else:
             # Both nodes are not leaves
             # Split node 2 (could also be implemented the other way round)
-            check_recursively(node1, node2.center)
+            check_recursively(node1, node2.self_node)
             check_recursively(node1, node2.left_child)
             check_recursively(node1, node2.right_child)
 
@@ -179,7 +179,7 @@ def kd_tree(nodes: List[KdTreeNode],
         rectangle_max=numpy.asarray(nmaxes),
         location=nodes[median].location,
         left_child=kd_tree(nodes[:median], depth + 1),
-        center=nodes[median],
+        self_node=nodes[median],
         right_child=kd_tree(nodes[median + 1:], depth + 1),
         children=list(map(lambda x: x.id, nodes))
     )
