@@ -128,7 +128,7 @@ if __name__ == "__main__":
     # Test grapg generation
 
     # Number of vertices
-    ns = [2000]
+    ns = [10]
     # Radiuses
     rs = [0.1]
 
@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
     # -------------------------------------------------------------------------------------------------
     # Checking statistical properties of graphs
-    number_of_graphs = 1000
+    number_of_graphs = 100
     n = 100
     r = 0.1
     graphs = list()
@@ -199,7 +199,7 @@ if __name__ == "__main__":
         averages.append(average_graph_degree)
     real = np.average(averages)
     predicted = np.pi * r * r * (n - 1)
-    error = (real - predicted) / real * 100
+    error = float("-inf") if real == 0 else (real - predicted) / real * 100
     print("Rzeczywisty średni stopień    {}".format(real))
     print("Przewidywany średni stopień   {}".format(predicted))
     print("Błąd                          {} %".format(error))
@@ -211,7 +211,7 @@ if __name__ == "__main__":
         averages.append(len(graph.edges))
     real = np.average(averages)
     predicted = np.pi * r * r * n * (n - 1) / 2
-    error = (real - predicted) / real * 100
+    error = float("-inf") if real == 0 else (real - predicted) / real * 100
     print("Rzeczywista ilość krawędzi    {}".format(real))
     print("Przewidywana ilość krawędzi   {}".format(predicted))
     print("Błąd                          {} %".format(error))
@@ -223,16 +223,16 @@ if __name__ == "__main__":
         averages.append(len(graph.edges))
     real = np.average(averages) / ((n * (n - 1)) / 2)
     predicted = np.pi * r * r * n * (n - 1) / 2 / ((n * (n - 1)) / 2)
-    error = (real - predicted) / real * 100
+    error = float("-inf") if real == 0 else (real - predicted) / real * 100
     print("Rzeczywista gęstość           {}".format(real))
     print("Przewidywana gęstość          {}".format(predicted))
     print("Błąd                          {} %".format(error))
 
     print("-------------------------------------------------------------------")
     print("Sprawdzanie rozkładu stopni wierzchołków ...")
-    # Create array with value "0" for all possible degree values (max value is n-1)
-    predicted_propability = np.pi * r * r
-    degrees = [0] * n
+    # Create array with value "0" for all possible degree values
+    predicted_propability = min(np.pi * r * r, 1)
+    degrees = [0] * (n - 1)
     # Count degree value occurrences in all graphs
     for index, graph in enumerate(graphs):
         for degree in map(lambda x: x[1], graph.degree):
@@ -245,7 +245,7 @@ if __name__ == "__main__":
     print("-------------------------------------------------------------------")
     print("Generowanie wykresu rozkładu rzeczywistego ...")
     fig, ax = plt.subplots(1, 1)
-    range_to_check = min(int(2 * (n * predicted_propability)+2), n)
+    range_to_check = min(math.ceil(2 * (n * predicted_propability)) + 10, n)
     for x in range(0, range_to_check):
         # Plot point on chart
         ax.plot(x, mean_degrees[x], 'bo', ms=8, label='binom pmf')
@@ -265,25 +265,35 @@ if __name__ == "__main__":
 
     print("-------------------------------------------------------------------")
     print("Sprawdzanie liczby składowych spójnych ...")
+
     connected_components_per_graph = list(map(lambda graph: list(connected_component_subgraphs(graph)), graphs))
     connected_components = [component for sublist in connected_components_per_graph for component in sublist]
-    mean_number_of_trees = sum(1 if nx.is_tree(components) else 0 for components in connected_components)
+
+    number_of_trees = sum(1 if nx.is_tree(component) else 0 for component in connected_components)
+    mean_number_of_trees = number_of_trees / n
+    mean_size_of_tree = sum(component.number_of_nodes() if nx.is_tree(component) else 0 for component in connected_components) / number_of_trees
+
     mean_number_of_nodes_in_component = np.average(list(map(lambda component: component.number_of_nodes(), connected_components)))
     mean_number_of_edges_in_component = np.average(list(map(lambda component: component.number_of_edges(), connected_components)))
-    mean_density_of_component = mean_number_of_edges_in_component / ((mean_number_of_nodes_in_component * (mean_number_of_nodes_in_component - 1)) / 2)
+
+    densities_of_components = list(map(lambda component: 1 if component.number_of_nodes() == 1 else 2 * component.number_of_edges() / (component.number_of_nodes() * (component.number_of_nodes() - 1)), connected_components))
+    mean_density_of_component = np.average(densities_of_components)
+
     numbers_of_components = list(map(lambda graph: len(list(connected_component_subgraphs(graph))), graphs))
     mean_number_of_components = np.average(numbers_of_components)
+
     print("Średnia liczba składowych spójnych:     {}".format(mean_number_of_components))
     print("Średnia liczba wierzchołków składowej:  {}".format(mean_number_of_nodes_in_component))
     print("Średnia liczba krawędzi składowej:      {}".format(mean_number_of_edges_in_component))
     print("Średnia gęstość składowej:              {}".format(mean_density_of_component))
     print("Średnia liczba drzew w grafie:          {}".format(mean_number_of_trees))
+    print("Średnia liczba wierzchołków w drzewie:  {}".format(mean_size_of_tree))
 
     print("-------------------------------------------------------------------")
     print("Sprawdzanie liczby cykli ...")
     base_cycles_for_graphs = list(map(lambda graph: nx.cycle_basis(graph), graphs))
     lengths_of_base_cycles = [len(cycle) for sublist in base_cycles_for_graphs for cycle in sublist]
     mean_number_of_base_cycles = len(lengths_of_base_cycles) / number_of_graphs
-    mean_length_of_base_cycle = np.average(lengths_of_base_cycles)
+    mean_length_of_base_cycle = 0 if len(lengths_of_base_cycles) == 0 else np.average(lengths_of_base_cycles)
     print("Liczba cykli bazowych: {}".format(mean_number_of_base_cycles))
     print("Średnia długość cyklu: {}".format(mean_length_of_base_cycle))
