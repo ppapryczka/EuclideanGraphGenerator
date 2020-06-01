@@ -125,57 +125,49 @@ def generate_simple_random_graph(
 
 
 if __name__ == "__main__":
+    number_of_graphs = 1000
+    n = 100
+    r = 0.1
+    graphs = list()
 
     # -------------------------------------------------------------------------------------------------
-    # Test grapg generation
+    # Test graph generation
+    print("-------------------------------------------------------------------")
+    print("Liczba wierzchołków: {}".format(n))
+    print("Zasięg:              {}".format(r))
 
-    # Number of vertices
-    ns = [10]
-    # Radiuses
-    rs = [0.1]
+    # Generate point positions
+    positions = generate_point_positions(0.0, 1.0, n)
 
-    for r in rs:
-        for n in ns:
-            print("-------------------------------------------------------------------")
-            print("Liczba wierzchołków: {}".format(n))
-            print("Zasięg:              {}".format(r))
+    # Generate Euclidean graph using kd tree and measure time
+    start = time.time()
+    g_kd = generate_simple_random_graph(
+        n, r, positions=positions, use_kd_tree=True
+    )
+    end = time.time()
+    time_kd = end - start
+    print("Z drzewem kd:        {} s".format(time_kd))
+    print("Liczba krawędzi:     {}".format(len(g_kd.edges)))
 
-            # Generate point positions
-            positions = generate_point_positions(0.0, 1.0, n)
+    # Generate Euclidean graph not using kd tree and measure time
+    start = time.time()
+    g_n2 = generate_simple_random_graph(
+        n, r, positions=positions, use_kd_tree=False
+    )
+    end = time.time()
+    time_n2 = end - start
+    print("Z przeszukaniem n^2: {} s".format(time_n2))
+    print("Liczba krawędzi:     {}".format(len(g_n2.edges)))
 
-            # Generate Euclidean graph using kd tree and measure time
-            start = time.time()
-            g_kd = generate_simple_random_graph(
-                n, r, positions=positions, use_kd_tree=True
-            )
-            end = time.time()
-            time_kd = end - start
-            print("Z drzewem kd:        {} s".format(time_kd))
-            print("Liczba krawędzi:     {}".format(len(g_kd.edges)))
-
-            # Generate Euclidean graph not using kd tree and measure time
-            start = time.time()
-            g_n2 = generate_simple_random_graph(
-                n, r, positions=positions, use_kd_tree=False
-            )
-            end = time.time()
-            time_n2 = end - start
-            print("Z przeszukaniem n^2: {} s".format(time_n2))
-            print("Liczba krawędzi:     {}".format(len(g_n2.edges)))
-
-            # Draw graph to file
-            pos = nx.get_node_attributes(g_n2, "pos")
-            figure = nx.draw_networkx(g_n2, pos, node_size=4, with_labels=False)
-            # plt.show()
-            plt.savefig("{}_{}_{}.png".format(datetime.now(), n, r))
-            plt.show()
+    # Draw graph to file
+    pos = nx.get_node_attributes(g_n2, "pos")
+    figure = nx.draw_networkx(g_n2, pos, node_size=4, with_labels=False)
+    # plt.show()
+    plt.savefig("{}_{}_{}.png".format(datetime.now(), n, r))
+    plt.show()
 
     # -------------------------------------------------------------------------------------------------
     # Checking statistical properties of graphs
-    number_of_graphs = 1000
-    n = 100
-    r = 0.2
-    graphs = list()
 
     print("-------------------------------------------------------------------")
     print("Sprawdzanie właściwości statystycznych")
@@ -247,7 +239,6 @@ if __name__ == "__main__":
 
     mean_degrees = list(map(lambda degree: degree / number_of_graphs, degrees))
     print("Rozkład stopni wierzchołków ...")
-    print(mean_degrees)
 
     max_to_check = min(math.ceil(2 * (n * predicted_propability)) + 10, n)
     range_to_check = range(0, max_to_check)
@@ -342,5 +333,10 @@ if __name__ == "__main__":
     ]
     mean_number_of_base_cycles = len(lengths_of_base_cycles) / number_of_graphs
     mean_length_of_base_cycle = 0 if len(lengths_of_base_cycles) == 0 else np.average(lengths_of_base_cycles)
-    print("Liczba cykli bazowych: {}".format(mean_number_of_base_cycles))
-    print("Średnia długość cyklu: {}".format(mean_length_of_base_cycle))
+    print("Liczba cykli bazowych:             {}".format(mean_number_of_base_cycles))
+    print("Średnia długość cyklu:             {}".format(mean_length_of_base_cycle))
+
+    clustering = list()
+    for graph in graphs:
+        clustering.append(nx.average_clustering(graph))
+    print("Średni współczynnik klasteryzacji: {}".format(np.average(clustering)))
