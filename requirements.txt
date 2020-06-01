@@ -6,7 +6,7 @@ scipy==1.4.1
 
 # test
 pytest==5.4.1
-pytest-cov=2.9.0
+pytest-cov==2.9.0
 
 
 # linter
