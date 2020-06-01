@@ -232,7 +232,7 @@ if __name__ == "__main__":
     print("Sprawdzanie rozkładu stopni wierzchołków ...")
     # Create array with value "0" for all possible degree values
     predicted_propability = min(np.pi * r * r, 1)
-    degrees = [0] * (n - 1)
+    degrees = [0] * n
     # Count degree value occurrences in all graphs
     for index, graph in enumerate(graphs):
         for degree in map(lambda x: x[1], graph.degree):
@@ -271,7 +271,7 @@ if __name__ == "__main__":
 
     number_of_trees = sum(1 if nx.is_tree(component) else 0 for component in connected_components)
     mean_number_of_trees = number_of_trees / n
-    mean_size_of_tree = sum(component.number_of_nodes() if nx.is_tree(component) else 0 for component in connected_components) / number_of_trees
+    mean_size_of_tree = 0 if number_of_trees == 0 else sum(component.number_of_nodes() if nx.is_tree(component) else 0 for component in connected_components) / number_of_trees
 
     mean_number_of_nodes_in_component = np.average(list(map(lambda component: component.number_of_nodes(), connected_components)))
     mean_number_of_edges_in_component = np.average(list(map(lambda component: component.number_of_edges(), connected_components)))
