@@ -16,4 +16,4 @@ black==19.10b0
 
 # doc
 Sphinx==3.0.4
-sphinx-rtd-theme=0.4.3
+sphinx-rtd-theme==0.4.3
