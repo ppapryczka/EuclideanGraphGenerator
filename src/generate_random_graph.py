@@ -27,7 +27,9 @@ def distance(point1: Sequence[float], point2: Sequence[float]) -> float:
 
 
 def generate_point_positions(
-    low_boundary: float, high_boundary: float, size: int
+        low_boundary: float,
+        high_boundary: float,
+        size: int
 ) -> List:
     """
     Generate points positions using ``np.random.uniform``
@@ -64,10 +66,10 @@ def connect_close_enough_edges_(g: nx.Graph, radius: float) -> None:
 
 
 def generate_simple_random_graph(
-    vertices_number: int,
-    radius: float,
-    positions: Union[List, None] = None,
-    use_kd_tree: bool = False,
+        vertices_number: int,
+        radius: float,
+        positions: Union[List, None] = None,
+        use_kd_tree: bool = False,
 ) -> nx.Graph:
     """
     Generate positions using ``generate_point_positions`` if ``positions``
@@ -172,7 +174,7 @@ if __name__ == "__main__":
     # Checking statistical properties of graphs
     number_of_graphs = 1000
     n = 100
-    r = 0.1
+    r = 0.2
     graphs = list()
 
     print("-------------------------------------------------------------------")
@@ -262,9 +264,6 @@ if __name__ == "__main__":
 
     max_value = max(list(map(lambda v: v[1], real_values + theoretical_values)))
 
-    print(real_values)
-    print(theoretical_values)
-
     print("-------------------------------------------------------------------")
     print("Generowanie wykresu rozkładu rzeczywistego ...")
 
@@ -275,7 +274,6 @@ if __name__ == "__main__":
             value,
             'bo',
             ms=8,
-            label='binom pmf'
         )
         ax.vlines(
             x,
@@ -303,33 +301,44 @@ if __name__ == "__main__":
     print("Sprawdzanie liczby składowych spójnych ...")
 
     connected_components_per_graph = list(map(lambda graph: list(connected_component_subgraphs(graph)), graphs))
-    connected_components = [component for sublist in connected_components_per_graph for component in sublist]
+    all_connected_components = [component for sublist in connected_components_per_graph for component in sublist]
 
-    number_of_trees = sum(1 if nx.is_tree(component) else 0 for component in connected_components)
-    mean_number_of_trees = number_of_trees / n
-    mean_size_of_tree = 0 if number_of_trees == 0 else sum(component.number_of_nodes() if nx.is_tree(component) else 0 for component in connected_components) / number_of_trees
+    all_trees_amongst_components = [component for component in all_connected_components if nx.is_tree(component)]
+    number_of_all_trees = len(all_trees_amongst_components)
+    mean_number_of_trees_per_graph = number_of_all_trees / number_of_graphs
 
-    mean_number_of_nodes_in_component = np.average(list(map(lambda component: component.number_of_nodes(), connected_components)))
-    mean_number_of_edges_in_component = np.average(list(map(lambda component: component.number_of_edges(), connected_components)))
+    if number_of_all_trees == 0:
+        mean_size_of_tree = 0
+    else:
+        mean_size_of_tree = sum(tree.number_of_nodes() for tree in all_trees_amongst_components) / number_of_all_trees
 
-    densities_of_components = list(map(lambda component: 1 if component.number_of_nodes() == 1 else 2 * component.number_of_edges() / (component.number_of_nodes() * (component.number_of_nodes() - 1)), connected_components))
+    mean_number_of_nodes_in_component = np.average(list(map(lambda component: component.number_of_nodes(), all_connected_components)))
+    mean_number_of_edges_in_component = np.average(list(map(lambda component: component.number_of_edges(), all_connected_components)))
+
+    densities_of_components = []
+    for component in all_connected_components:
+        if component.number_of_nodes() == 1:
+            densities_of_components.append(1)
+        else:
+            density = 2 * component.number_of_edges() / (component.number_of_nodes() * (component.number_of_nodes() - 1))
+            densities_of_components.append(density)
+
     mean_density_of_component = np.average(densities_of_components)
-
-    numbers_of_components = list(map(lambda graph: len(list(connected_component_subgraphs(graph))), graphs))
-    mean_number_of_components = np.average(numbers_of_components)
+    numbers_of_components_per_graph = list(map(lambda graph: len(list(connected_component_subgraphs(graph))), graphs))
+    mean_number_of_components = np.average(numbers_of_components_per_graph)
 
     print("Średnia liczba składowych spójnych:     {}".format(mean_number_of_components))
     print("Średnia liczba wierzchołków składowej:  {}".format(mean_number_of_nodes_in_component))
     print("Średnia liczba krawędzi składowej:      {}".format(mean_number_of_edges_in_component))
     print("Średnia gęstość składowej:              {}".format(mean_density_of_component))
-    print("Średnia liczba drzew w grafie:          {}".format(mean_number_of_trees))
+    print("Średnia liczba drzew w grafie:          {}".format(mean_number_of_trees_per_graph))
     print("Średnia liczba wierzchołków w drzewie:  {}".format(mean_size_of_tree))
 
     print("-------------------------------------------------------------------")
     print("Sprawdzanie liczby cykli ...")
-    base_cycles_for_graphs = list(map(lambda graph: nx.cycle_basis(graph), graphs))
+    base_cycles_per_graph = list(map(lambda graph: nx.cycle_basis(graph), graphs))
     lengths_of_base_cycles = [
-        len(cycle) for sublist in base_cycles_for_graphs for cycle in sublist
+        len(cycle) for sublist in base_cycles_per_graph for cycle in sublist
     ]
     mean_number_of_base_cycles = len(lengths_of_base_cycles) / number_of_graphs
     mean_length_of_base_cycle = 0 if len(lengths_of_base_cycles) == 0 else np.average(lengths_of_base_cycles)
