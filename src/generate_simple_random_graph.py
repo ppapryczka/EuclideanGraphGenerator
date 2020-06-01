@@ -238,28 +238,47 @@ if __name__ == "__main__":
         for degree in map(lambda x: x[1], graph.degree):
             degrees[degree] += 1
     # Normalize (divide by the number of graphs and the number of vertices in graph
+
     mean_degrees = list(map(lambda degree: degree / number_of_graphs, degrees))
     print("Rozkład stopni wierzchołków ...")
     print(mean_degrees)
 
+    max_to_check = min(math.ceil(2 * (n * predicted_propability)) + 10, n)
+    range_to_check = range(0, max_to_check)
+    real_values = []
+    theoretical_values = []
+
+    for x in range_to_check:
+        value = mean_degrees[x]
+        real_values.append((x, value))
+
+    for x in range_to_check:
+        value = n * binom.pmf(x, n - 1, predicted_propability)
+        theoretical_values.append((x, value))
+
+    max_value = max(list(map(lambda v: v[1], real_values + theoretical_values)))
+
+    print(real_values)
+    print(theoretical_values)
+
     print("-------------------------------------------------------------------")
     print("Generowanie wykresu rozkładu rzeczywistego ...")
+
     fig, ax = plt.subplots(1, 1)
-    range_to_check = min(math.ceil(2 * (n * predicted_propability)) + 10, n)
-    for x in range(0, range_to_check):
-        # Plot point on chart
-        ax.plot(x, mean_degrees[x], 'bo', ms=8, label='binom pmf')
-        # Plot blue line from x axis to point
-        ax.vlines(x, 0, mean_degrees[x], colors='b', lw=5, alpha=0.5)
+    for x, value in real_values:
+        ax.plot(x, value, 'bo', ms=8, label='binom pmf')
+        ax.vlines(x, 0, value, colors='b', lw=5, alpha=0.5)
+    plt.ylim(0, max_value * 1.1)
     plt.savefig("chart_real_{}_{}_{}_{}.png".format(datetime.now(), n, r, number_of_graphs))
     plt.show()
 
     print("-------------------------------------------------------------------")
     print("Generowanie wykresu rozkładu teoretycznego ...")
     fig, ax = plt.subplots(1, 1)
-    for x in range(0, range_to_check):
-        ax.plot(x, n * binom.pmf(x, n - 1, predicted_propability), 'bo', ms=8, label='binom pmf')
-        ax.vlines(x, 0, n * binom.pmf(x, n - 1, predicted_propability), colors='b', lw=5, alpha=0.5)
+    for x, value in theoretical_values:
+        ax.plot(x, value, 'bo', ms=8, label='binom pmf')
+        ax.vlines(x, 0, value, colors='b', lw=5, alpha=0.5)
+    plt.ylim(0, max_value * 1.1)
     plt.savefig("chart_theoretical_{}_{}_{}_{}.png".format(datetime.now(), n, r, number_of_graphs))
     plt.show()
 
