@@ -1,3 +1,8 @@
+"""
+Module with function to run euclidean graph generation
+from command line.
+"""
+
 import argparse
 from typing import List
 import sys
@@ -6,7 +11,19 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 
-def check_radius(parser: argparse.ArgumentParser, radius: float):
+def check_radius(parser: argparse.ArgumentParser, radius: str) -> float:
+    """
+    Check if given ``radius`` is float number in range
+    (0.0, 1.0). If not float or bad value call parser error.
+
+    Args:
+        parser: Command parser.
+        radius: String to check if appropriate radius.
+
+    Returns:
+        Radius as float.
+    """
+    # try if it is float number
     try:
         x = float(radius)
     except ValueError:
@@ -14,6 +31,7 @@ def check_radius(parser: argparse.ArgumentParser, radius: float):
             "Not appropriate value for radius! Expected float between (0.0, 1.0)."
         )
 
+    # check if radius have appropriate value
     if 0.0 < x < 1.0:
         return x
     else:
@@ -22,7 +40,16 @@ def check_radius(parser: argparse.ArgumentParser, radius: float):
         )
 
 
-def generate_random_graph_command(command_args: List[str]):
+def generate_random_graph_command(command_args: List[str]) -> None:
+    """
+    Parse ``command_args`` and run simple generation with
+    given number of vertices and radius. If given output
+    file name save generate graph as png file
+
+    Args:
+        command_args: Argument to command.
+    """
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -45,12 +72,17 @@ def generate_random_graph_command(command_args: List[str]):
         default=None,
     )
 
+    # parse arguments
     args = parser.parse_args(command_args)
 
+    # generate simple graph with given number of vertices and radius
     g = generate_simple_random_graph(args.num, args.radius)
+
+    # draw graph
     pos = nx.get_node_attributes(g, "pos")
     nx.draw_networkx(g, pos, node_size=10, with_labels=False)
 
+    # check if output argument given and save or show
     if args.output is None:
         plt.show()
     else:

@@ -13,4 +13,5 @@ venv/
 out/
 .pytest_cache
 .coverage
-html/
+docs/cov_html/*
+docs/documentation/build/*
