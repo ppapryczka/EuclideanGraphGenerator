@@ -27,7 +27,9 @@ def distance(point1: Sequence[float], point2: Sequence[float]) -> float:
 
 
 def generate_point_positions(
-    low_boundary: float, high_boundary: float, size: int
+        low_boundary: float,
+        high_boundary: float,
+        size: int
 ) -> List:
     """
     Generate points positions using ``np.random.uniform``
@@ -64,10 +66,10 @@ def connect_close_enough_edges_(g: nx.Graph, radius: float) -> None:
 
 
 def generate_simple_random_graph(
-    vertices_number: int,
-    radius: float,
-    positions: Union[List, None] = None,
-    use_kd_tree: bool = False,
+        vertices_number: int,
+        radius: float,
+        positions: Union[List, None] = None,
+        use_kd_tree: bool = False,
 ) -> nx.Graph:
     """
     Generate positions using ``generate_point_positions`` if ``positions``
@@ -123,57 +125,49 @@ def generate_simple_random_graph(
 
 
 if __name__ == "__main__":
-
-    # -------------------------------------------------------------------------------------------------
-    # Test grapg generation
-
-    # Number of vertices
-    ns = [2000]
-    # Radiuses
-    rs = [0.1]
-
-    for r in rs:
-        for n in ns:
-            print("-------------------------------------------------------------------")
-            print("Liczba wierzchołków: {}".format(n))
-            print("Zasięg:              {}".format(r))
-
-            # Generate point positions
-            positions = generate_point_positions(0.0, 1.0, n)
-
-            # Generate Euclidean graph using kd tree and measure time
-            start = time.time()
-            g_kd = generate_simple_random_graph(
-                n, r, positions=positions, use_kd_tree=True
-            )
-            end = time.time()
-            time_kd = end - start
-            print("Z drzewem kd:        {} s".format(time_kd))
-            print("Liczba krawędzi:     {}".format(len(g_kd.edges)))
-
-            # Generate Euclidean graph not using kd tree and measure time
-            start = time.time()
-            g_n2 = generate_simple_random_graph(
-                n, r, positions=positions, use_kd_tree=False
-            )
-            end = time.time()
-            time_n2 = end - start
-            print("Z przeszukaniem n^2: {} s".format(time_n2))
-            print("Liczba krawędzi:     {}".format(len(g_n2.edges)))
-
-            # Draw graph to file
-            pos = nx.get_node_attributes(g_n2, "pos")
-            figure = nx.draw_networkx(g_n2, pos, node_size=4, with_labels=False)
-            # plt.show()
-            plt.savefig("{}_{}_{}.png".format(datetime.now(), n, r))
-            plt.show()
-
-    # -------------------------------------------------------------------------------------------------
-    # Checking statistical properties of graphs
     number_of_graphs = 1000
     n = 100
     r = 0.1
     graphs = list()
+
+    # -------------------------------------------------------------------------------------------------
+    # Test graph generation
+    print("-------------------------------------------------------------------")
+    print("Liczba wierzchołków: {}".format(n))
+    print("Zasięg:              {}".format(r))
+
+    # Generate point positions
+    positions = generate_point_positions(0.0, 1.0, n)
+
+    # Generate Euclidean graph using kd tree and measure time
+    start = time.time()
+    g_kd = generate_simple_random_graph(
+        n, r, positions=positions, use_kd_tree=True
+    )
+    end = time.time()
+    time_kd = end - start
+    print("Z drzewem kd:        {} s".format(time_kd))
+    print("Liczba krawędzi:     {}".format(len(g_kd.edges)))
+
+    # Generate Euclidean graph not using kd tree and measure time
+    start = time.time()
+    g_n2 = generate_simple_random_graph(
+        n, r, positions=positions, use_kd_tree=False
+    )
+    end = time.time()
+    time_n2 = end - start
+    print("Z przeszukaniem n^2: {} s".format(time_n2))
+    print("Liczba krawędzi:     {}".format(len(g_n2.edges)))
+
+    # Draw graph to file
+    pos = nx.get_node_attributes(g_n2, "pos")
+    figure = nx.draw_networkx(g_n2, pos, node_size=4, with_labels=False)
+    # plt.show()
+    plt.savefig("{}_{}_{}.png".format(datetime.now(), n, r))
+    plt.show()
+
+    # -------------------------------------------------------------------------------------------------
+    # Checking statistical properties of graphs
 
     print("-------------------------------------------------------------------")
     print("Sprawdzanie właściwości statystycznych")
@@ -203,7 +197,7 @@ if __name__ == "__main__":
         averages.append(average_graph_degree)
     real = np.average(averages)
     predicted = np.pi * r * r * (n - 1)
-    error = (real - predicted) / real * 100
+    error = float("-inf") if real == 0 else (real - predicted) / real * 100
     print("Rzeczywisty średni stopień    {}".format(real))
     print("Przewidywany średni stopień   {}".format(predicted))
     print("Błąd                          {} %".format(error))
@@ -215,7 +209,7 @@ if __name__ == "__main__":
         averages.append(len(graph.edges))
     real = np.average(averages)
     predicted = np.pi * r * r * n * (n - 1) / 2
-    error = (real - predicted) / real * 100
+    error = float("-inf") if real == 0 else (real - predicted) / real * 100
     print("Rzeczywista ilość krawędzi    {}".format(real))
     print("Przewidywana ilość krawędzi   {}".format(predicted))
     print("Błąd                          {} %".format(error))
@@ -227,115 +221,122 @@ if __name__ == "__main__":
         averages.append(len(graph.edges))
     real = np.average(averages) / ((n * (n - 1)) / 2)
     predicted = np.pi * r * r * n * (n - 1) / 2 / ((n * (n - 1)) / 2)
-    error = (real - predicted) / real * 100
+    error = float("-inf") if real == 0 else (real - predicted) / real * 100
     print("Rzeczywista gęstość           {}".format(real))
     print("Przewidywana gęstość          {}".format(predicted))
     print("Błąd                          {} %".format(error))
 
     print("-------------------------------------------------------------------")
     print("Sprawdzanie rozkładu stopni wierzchołków ...")
-    # Create array with value "0" for all possible degree values (max value is n-1)
-    predicted_propability = np.pi * r * r
+    # Create array with value "0" for all possible degree values
+    predicted_propability = min(np.pi * r * r, 1)
     degrees = [0] * n
     # Count degree value occurrences in all graphs
     for index, graph in enumerate(graphs):
         for degree in map(lambda x: x[1], graph.degree):
             degrees[degree] += 1
     # Normalize (divide by the number of graphs and the number of vertices in graph
+
     mean_degrees = list(map(lambda degree: degree / number_of_graphs, degrees))
     print("Rozkład stopni wierzchołków ...")
-    print(mean_degrees)
+
+    max_to_check = min(math.ceil(2 * (n * predicted_propability)) + 10, n)
+    range_to_check = range(0, max_to_check)
+    real_values = []
+    theoretical_values = []
+
+    for x in range_to_check:
+        value = mean_degrees[x]
+        real_values.append((x, value))
+
+    for x in range_to_check:
+        value = n * binom.pmf(x, n - 1, predicted_propability)
+        theoretical_values.append((x, value))
+
+    max_value = max(list(map(lambda v: v[1], real_values + theoretical_values)))
 
     print("-------------------------------------------------------------------")
     print("Generowanie wykresu rozkładu rzeczywistego ...")
+
     fig, ax = plt.subplots(1, 1)
-    range_to_check = min(int(2 * (n * predicted_propability) + 2), n)
-    for x in range(0, range_to_check):
-        # Plot point on chart
-        ax.plot(x, mean_degrees[x], "bo", ms=8, label="binom pmf")
-        # Plot blue line from x axis to point
-        ax.vlines(x, 0, mean_degrees[x], colors="b", lw=5, alpha=0.5)
-    plt.savefig(
-        "chart_real_{}_{}_{}_{}.png".format(datetime.now(), n, r, number_of_graphs)
-    )
+    for x, value in real_values:
+        ax.plot(
+            x,
+            value,
+            'bo',
+            ms=8,
+        )
+        ax.vlines(
+            x,
+            0,
+            value,
+            colors='b',
+            lw=5,
+            alpha=0.5
+        )
+    plt.ylim(0, max_value * 1.1)
+    plt.savefig("chart_real_{}_{}_{}_{}.png".format(datetime.now(), n, r, number_of_graphs))
     plt.show()
 
     print("-------------------------------------------------------------------")
     print("Generowanie wykresu rozkładu teoretycznego ...")
     fig, ax = plt.subplots(1, 1)
-    for x in range(0, range_to_check):
-        ax.plot(
-            x,
-            n * binom.pmf(x, n - 1, predicted_propability),
-            "bo",
-            ms=8,
-            label="binom pmf",
-        )
-        ax.vlines(
-            x,
-            0,
-            n * binom.pmf(x, n - 1, predicted_propability),
-            colors="b",
-            lw=5,
-            alpha=0.5,
-        )
-    plt.savefig(
-        "chart_theoretical_{}_{}_{}_{}.png".format(
-            datetime.now(), n, r, number_of_graphs
-        )
-    )
+    for x, value in theoretical_values:
+        ax.plot(x, value, 'bo', ms=8, label='binom pmf')
+        ax.vlines(x, 0, value, colors='b', lw=5, alpha=0.5)
+    plt.ylim(0, max_value * 1.1)
+    plt.savefig("chart_theoretical_{}_{}_{}_{}.png".format(datetime.now(), n, r, number_of_graphs))
     plt.show()
 
     print("-------------------------------------------------------------------")
     print("Sprawdzanie liczby składowych spójnych ...")
-    connected_components_per_graph = list(
-        map(lambda graph: list(connected_component_subgraphs(graph)), graphs)
-    )
-    connected_components = [
-        component for sublist in connected_components_per_graph for component in sublist
-    ]
-    mean_number_of_trees = sum(
-        1 if nx.is_tree(components) else 0 for components in connected_components
-    )
-    mean_number_of_nodes_in_component = np.average(
-        list(map(lambda component: component.number_of_nodes(), connected_components))
-    )
-    mean_number_of_edges_in_component = np.average(
-        list(map(lambda component: component.number_of_edges(), connected_components))
-    )
-    mean_density_of_component = mean_number_of_edges_in_component / (
-        (mean_number_of_nodes_in_component * (mean_number_of_nodes_in_component - 1))
-        / 2
-    )
-    numbers_of_components = list(
-        map(lambda graph: len(list(connected_component_subgraphs(graph))), graphs)
-    )
-    mean_number_of_components = np.average(numbers_of_components)
-    print(
-        "Średnia liczba składowych spójnych:     {}".format(mean_number_of_components)
-    )
-    print(
-        "Średnia liczba wierzchołków składowej:  {}".format(
-            mean_number_of_nodes_in_component
-        )
-    )
-    print(
-        "Średnia liczba krawędzi składowej:      {}".format(
-            mean_number_of_edges_in_component
-        )
-    )
-    print(
-        "Średnia gęstość składowej:              {}".format(mean_density_of_component)
-    )
-    print("Średnia liczba drzew w grafie:          {}".format(mean_number_of_trees))
+
+    connected_components_per_graph = list(map(lambda graph: list(connected_component_subgraphs(graph)), graphs))
+    all_connected_components = [component for sublist in connected_components_per_graph for component in sublist]
+
+    all_trees_amongst_components = [component for component in all_connected_components if nx.is_tree(component)]
+    number_of_all_trees = len(all_trees_amongst_components)
+    mean_number_of_trees_per_graph = number_of_all_trees / number_of_graphs
+
+    if number_of_all_trees == 0:
+        mean_size_of_tree = 0
+    else:
+        mean_size_of_tree = sum(tree.number_of_nodes() for tree in all_trees_amongst_components) / number_of_all_trees
+
+    mean_number_of_nodes_in_component = np.average(list(map(lambda component: component.number_of_nodes(), all_connected_components)))
+    mean_number_of_edges_in_component = np.average(list(map(lambda component: component.number_of_edges(), all_connected_components)))
+
+    densities_of_components = []
+    for component in all_connected_components:
+        if component.number_of_nodes() == 1:
+            densities_of_components.append(1)
+        else:
+            density = 2 * component.number_of_edges() / (component.number_of_nodes() * (component.number_of_nodes() - 1))
+            densities_of_components.append(density)
+
+    mean_density_of_component = np.average(densities_of_components)
+    numbers_of_components_per_graph = list(map(lambda graph: len(list(connected_component_subgraphs(graph))), graphs))
+    mean_number_of_components = np.average(numbers_of_components_per_graph)
+
+    print("Średnia liczba składowych spójnych:     {}".format(mean_number_of_components))
+    print("Średnia liczba wierzchołków składowej:  {}".format(mean_number_of_nodes_in_component))
+    print("Średnia liczba krawędzi składowej:      {}".format(mean_number_of_edges_in_component))
+    print("Średnia gęstość składowej:              {}".format(mean_density_of_component))
+    print("Średnia liczba drzew w grafie:          {}".format(mean_number_of_trees_per_graph))
+    print("Średnia liczba wierzchołków w drzewie:  {}".format(mean_size_of_tree))
 
     print("-------------------------------------------------------------------")
     print("Sprawdzanie liczby cykli ...")
-    base_cycles_for_graphs = list(map(lambda graph: nx.cycle_basis(graph), graphs))
+    base_cycles_per_graph = list(map(lambda graph: nx.cycle_basis(graph), graphs))
     lengths_of_base_cycles = [
-        len(cycle) for sublist in base_cycles_for_graphs for cycle in sublist
+        len(cycle) for sublist in base_cycles_per_graph for cycle in sublist
     ]
     mean_number_of_base_cycles = len(lengths_of_base_cycles) / number_of_graphs
-    mean_length_of_base_cycle = np.average(lengths_of_base_cycles)
-    print("Liczba cykli bazowych: {}".format(mean_number_of_base_cycles))
-    print("Średnia długość cyklu: {}".format(mean_length_of_base_cycle))
+    mean_length_of_base_cycle = 0 if len(lengths_of_base_cycles) == 0 else np.average(lengths_of_base_cycles)
+    print("Liczba cykli bazowych:             {}".format(mean_number_of_base_cycles))
+    print("Średnia długość cyklu:             {}".format(mean_length_of_base_cycle))
+
+    clustering = list()
+    for graph in graphs:
+        clustering.append(nx.average_clustering(graph))
+    print("Średni współczynnik klasteryzacji: {}".format(np.average(clustering)))
