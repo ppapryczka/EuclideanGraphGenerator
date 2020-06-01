@@ -1,3 +1,7 @@
+"""
+Implementation of KD tree for 2D for faster graph generation.
+"""
+
 import math
 from collections import namedtuple
 from typing import Tuple, List
@@ -5,23 +9,27 @@ from typing import Tuple, List
 import numpy
 
 
-class KdTreeNode(namedtuple('Node', 'id rectangle_min rectangle_max location left_child self_node right_child children')):
-
+class KdTreeNode(
+    namedtuple(
+        "Node",
+        "id rectangle_min rectangle_max location left_child self_node right_child children",
+    )
+):
     def is_leaf(self):
         return len(self.children) == 1
 
     def __str__(self):
-        return "{}: {} LEFT: {}, RIGHT: {}\n   {}\n    {}" \
-            .format(self.id,
-                    self.location,
-                    self.left_child.id if self.left_child else "None",
-                    self.right_child.id if self.right_child else "None",
-                    self.left_child if self.left_child else "None",
-                    self.right_child if self.right_child else "None")
+        return "{}: {} LEFT: {}, RIGHT: {}\n   {}\n    {}".format(
+            self.id,
+            self.location,
+            self.left_child.id if self.left_child else "None",
+            self.right_child.id if self.right_child else "None",
+            self.left_child if self.left_child else "None",
+            self.right_child if self.right_child else "None",
+        )
 
 
-def create_standalone_kd_node(idx: int,
-                              position: Tuple[float, float]) -> KdTreeNode:
+def create_standalone_kd_node(idx: int, position: Tuple[float, float]) -> KdTreeNode:
     """
     Create standalone node of kd tree. May be used to create initial nodes and then build kd tree from them
 
@@ -32,18 +40,19 @@ def create_standalone_kd_node(idx: int,
     Returns:
         Standalone node of the kd tree.
     """
-    return KdTreeNode(id=idx,
-                      rectangle_min=numpy.asarray(position).astype(float),
-                      rectangle_max=numpy.asarray(position).astype(float),
-                      location=position,
-                      left_child=None,
-                      self_node=None,
-                      right_child=None,
-                      children=[idx])
+    return KdTreeNode(
+        id=idx,
+        rectangle_min=numpy.asarray(position).astype(float),
+        rectangle_max=numpy.asarray(position).astype(float),
+        location=position,
+        left_child=None,
+        self_node=None,
+        right_child=None,
+        children=[idx],
+    )
 
 
-def min_distance_rectangle(first: KdTreeNode,
-                           second: KdTreeNode) -> float:
+def min_distance_rectangle(first: KdTreeNode, second: KdTreeNode) -> float:
     """
     Returns minimal distance between points belonging to node 'first' and 'second'.
     Will return 0 when bounding boxes of nodes are touching or overlapping.
@@ -57,7 +66,16 @@ def min_distance_rectangle(first: KdTreeNode,
     Returns:
         Minimal distance between points in nodes.
     """
-    return distance((0., 0.), numpy.maximum(0, numpy.maximum(first.rectangle_min - second.rectangle_max, second.rectangle_min - first.rectangle_max)))
+    return distance(
+        (0.0, 0.0),
+        numpy.maximum(
+            0,
+            numpy.maximum(
+                first.rectangle_min - second.rectangle_max,
+                second.rectangle_min - first.rectangle_max,
+            ),
+        ),
+    )
 
 
 def max_distance_rectangle(first: KdTreeNode, second: KdTreeNode):
@@ -78,8 +96,7 @@ def max_distance_rectangle(first: KdTreeNode, second: KdTreeNode):
     return distance(min_p, max_p)
 
 
-def distance(point1: Tuple[float, float],
-             point2: Tuple[float, float]) -> float:
+def distance(point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
     """
     Count euclidean distance between ``point1`` and ``point2``.
 
@@ -145,8 +162,7 @@ def query_pairs(tree: KdTreeNode, radius: float):
     return results
 
 
-def kd_tree(nodes: List[KdTreeNode],
-            depth: int = 0):
+def kd_tree(nodes: List[KdTreeNode], depth: int = 0):
     """
     Recurrently checks existence of all possible edges of graph.
 
@@ -180,6 +196,6 @@ def kd_tree(nodes: List[KdTreeNode],
         location=nodes[median].location,
         left_child=kd_tree(nodes[:median], depth + 1),
         self_node=nodes[median],
-        right_child=kd_tree(nodes[median + 1:], depth + 1),
-        children=list(map(lambda x: x.id, nodes))
+        right_child=kd_tree(nodes[median + 1 :], depth + 1),
+        children=list(map(lambda x: x.id, nodes)),
     )
