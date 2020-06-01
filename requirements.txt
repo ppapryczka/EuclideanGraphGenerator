@@ -8,10 +8,12 @@ scipy==1.4.1
 pytest==5.4.1
 pytest-cov==2.9.0
 
-
 # linter
 flake8==3.7.9
 
 # tools 
 black==19.10b0
 
+# doc
+Sphinx==3.0.4
+sphinx-rtd-theme=0.4.3

@@ -12,3 +12,5 @@ venv/
 
 out/
 .pytest_cache
+.coverage
+html/

@@ -37,12 +37,24 @@ def generate_random_graph_command(command_args: List[str]):
         required=True,
     )
 
+    parser.add_argument(
+        "--output",
+        "-O",
+        help="name of output file with graph",
+        required=False,
+        default=None,
+    )
+
     args = parser.parse_args(command_args)
 
     g = generate_simple_random_graph(args.num, args.radius)
     pos = nx.get_node_attributes(g, "pos")
     nx.draw_networkx(g, pos, node_size=10, with_labels=False)
-    plt.show()
+
+    if args.output is None:
+        plt.show()
+    else:
+        plt.savefig(args.output, format="png", dpi=300)
 
 
 if __name__ == "__main__":
