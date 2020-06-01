@@ -8,12 +8,11 @@ import networkx as nx
 import numpy as np
 from scipy.stats import binom
 
-from kd_tree import create_standalone_kd_node, query_pairs, kd_tree
-from networkx_extensions import connected_component_subgraphs
+from src.kd_tree import create_standalone_kd_node, query_pairs, kd_tree
+from src.networkx_extensions import connected_component_subgraphs
 
 
-def distance(point1: Sequence[float],
-             point2: Sequence[float]) -> float:
+def distance(point1: Sequence[float], point2: Sequence[float]) -> float:
     """
     Count euclidean distance between ``point1`` and ``point2``.
 
@@ -27,9 +26,9 @@ def distance(point1: Sequence[float],
     return math.hypot(point2[0] - point1[0], point2[1] - point1[1])
 
 
-def generate_point_positions(low_boundary: float,
-                             high_boundary: float,
-                             size: int) -> List:
+def generate_point_positions(
+    low_boundary: float, high_boundary: float, size: int
+) -> List:
     """
     Generate points positions using ``np.random.uniform``
     in range [``low_boundary``, ``high_boundary``).
@@ -64,10 +63,12 @@ def connect_close_enough_edges_(g: nx.Graph, radius: float) -> None:
                 g.add_edge(n1, n2)
 
 
-def generate_simple_random_graph(vertices_number: int,
-                                 radius: float,
-                                 positions: Union[List, None] = None,
-                                 use_kd_tree: bool = False) -> nx.Graph:
+def generate_simple_random_graph(
+    vertices_number: int,
+    radius: float,
+    positions: Union[List, None] = None,
+    use_kd_tree: bool = False,
+) -> nx.Graph:
     """
     Generate positions using ``generate_point_positions`` if ``positions``
     is None, add nodes with positions information, connect nodes closer than
@@ -82,10 +83,9 @@ def generate_simple_random_graph(vertices_number: int,
     Returns:
         Random geometric graph.
     """
-
     if positions is not None:
         if vertices_number != len(positions):
-            Exception("Number of vertices and length of positions differ.")
+            raise Exception("Number of vertices and length of positions differ.")
 
     # generate positions if not given
     if positions is None:
@@ -139,11 +139,13 @@ if __name__ == "__main__":
             print("Zasięg:              {}".format(r))
 
             # Generate point positions
-            positions = generate_point_positions(0., 1., n)
+            positions = generate_point_positions(0.0, 1.0, n)
 
             # Generate Euclidean graph using kd tree and measure time
             start = time.time()
-            g_kd = generate_simple_random_graph(n, r, positions=positions, use_kd_tree=True)
+            g_kd = generate_simple_random_graph(
+                n, r, positions=positions, use_kd_tree=True
+            )
             end = time.time()
             time_kd = end - start
             print("Z drzewem kd:        {} s".format(time_kd))
@@ -151,7 +153,9 @@ if __name__ == "__main__":
 
             # Generate Euclidean graph not using kd tree and measure time
             start = time.time()
-            g_n2 = generate_simple_random_graph(n, r, positions=positions, use_kd_tree=False)
+            g_n2 = generate_simple_random_graph(
+                n, r, positions=positions, use_kd_tree=False
+            )
             end = time.time()
             time_n2 = end - start
             print("Z przeszukaniem n^2: {} s".format(time_n2))
@@ -166,7 +170,7 @@ if __name__ == "__main__":
 
     # -------------------------------------------------------------------------------------------------
     # Checking statistical properties of graphs
-    number_of_graphs = 100
+    number_of_graphs = 1000
     n = 100
     r = 0.1
     graphs = list()
@@ -181,7 +185,7 @@ if __name__ == "__main__":
     print("Generacja grafów ...")
     start = time.time()
     for i in range(0, number_of_graphs):
-        positions = generate_point_positions(0., 1., n)
+        positions = generate_point_positions(0.0, 1.0, n)
         g_kd = generate_simple_random_graph(n, r, positions=positions, use_kd_tree=True)
         graphs.append(g_kd)
         if i % (number_of_graphs / 100) == 0:
@@ -266,8 +270,21 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(1, 1)
     for x, value in real_values:
-        ax.plot(x, value, 'bo', ms=8, label='binom pmf')
-        ax.vlines(x, 0, value, colors='b', lw=5, alpha=0.5)
+        ax.plot(
+            x,
+            value,
+            'bo',
+            ms=8,
+            label='binom pmf'
+        )
+        ax.vlines(
+            x,
+            0,
+            value,
+            colors='b',
+            lw=5,
+            alpha=0.5
+        )
     plt.ylim(0, max_value * 1.1)
     plt.savefig("chart_real_{}_{}_{}_{}.png".format(datetime.now(), n, r, number_of_graphs))
     plt.show()
@@ -311,7 +328,9 @@ if __name__ == "__main__":
     print("-------------------------------------------------------------------")
     print("Sprawdzanie liczby cykli ...")
     base_cycles_for_graphs = list(map(lambda graph: nx.cycle_basis(graph), graphs))
-    lengths_of_base_cycles = [len(cycle) for sublist in base_cycles_for_graphs for cycle in sublist]
+    lengths_of_base_cycles = [
+        len(cycle) for sublist in base_cycles_for_graphs for cycle in sublist
+    ]
     mean_number_of_base_cycles = len(lengths_of_base_cycles) / number_of_graphs
     mean_length_of_base_cycle = 0 if len(lengths_of_base_cycles) == 0 else np.average(lengths_of_base_cycles)
     print("Liczba cykli bazowych: {}".format(mean_number_of_base_cycles))
