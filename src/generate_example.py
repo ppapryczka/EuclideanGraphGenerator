@@ -1,9 +1,11 @@
 import argparse
-from typing import List
 import sys
-from src.generate_random_graph import generate_simple_random_graph
-import networkx as nx
+from typing import List
+
 import matplotlib.pyplot as plt
+import networkx as nx
+
+from src.graph_generation import generate_simple_random_graph
 
 
 def check_radius(parser: argparse.ArgumentParser, radius: float):
@@ -39,7 +41,7 @@ def generate_random_graph_command(command_args: List[str]):
 
     args = parser.parse_args(command_args)
 
-    g = generate_simple_random_graph(args.num, args.radius)
+    g, execution_time = generate_simple_random_graph(args.num, args.radius)
     pos = nx.get_node_attributes(g, "pos")
     nx.draw_networkx(g, pos, node_size=10, with_labels=False)
     plt.show()
