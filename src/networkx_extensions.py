@@ -17,12 +17,6 @@ def connected_component_subgraphs(G, copy=True):
     comp : generator
       A generator of graphs, one for each connected component of G.
 
-    Examples
-    --------
-    >>> G = nx.path_graph(4)
-    >>> G.add_edge(5,6)
-    >>> graphs = list(nx.connected_component_subgraphs(G))
-
     See Also
     --------
     connected_components
