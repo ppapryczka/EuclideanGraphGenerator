@@ -16,6 +16,7 @@ def main():
 
     output_directory = create_output_directory("generation_{}".format(datetime.now()))
 
+    generate_n2_example = False
     perform_long_operations = True
 
     # -------------------------------------------------------------------------------------------------
@@ -43,17 +44,21 @@ def main():
     print()
 
     # Generate Euclidean graph using n^2 check
-    print(">>>Generowanie grafu Euklidesowego (n^2)")
-    g_n2, n2_execution_time = generate_simple_random_graph(
-        number_of_vertices=n,
-        radius=r,
-        positions=positions,
-        use_kd_tree=False
-    )
-    print("Liczba krawędzi:     {}".format(len(g_n2.edges)))
-    print("Ukończone w          {} s".format(n2_execution_time))
-    print()
-
+    if generate_n2_example:
+        print(">>>Generowanie grafu Euklidesowego (n^2)")
+        g_n2, n2_execution_time = generate_simple_random_graph(
+            number_of_vertices=n,
+            radius=r,
+            positions=positions,
+            use_kd_tree=False
+        )
+        g_n2_edges = len(g_n2.edges)
+        print("Liczba krawędzi:     {}".format(g_n2_edges))
+        print("Ukończone w          {} s".format(n2_execution_time))
+        print()
+    else:
+        g_n2_edges = -1
+        n2_execution_time = -1
     # Show graph and save it to file
     show_graph(g_kd, output_directory + "/sample_graph_{}_{}.png".format(n, r))
 
@@ -142,7 +147,7 @@ def main():
     print(kd_execution_time, file=output)
     print(len(g_kd.edges), file=output)
     print(n2_execution_time, file=output)
-    print(len(g_n2.edges), file=output)
+    print(g_n2_edges, file=output)
     print(real_mean_degree, file=output)
     print(expected_mean_degree, file=output)
     print(real_number_of_edges, file=output)
