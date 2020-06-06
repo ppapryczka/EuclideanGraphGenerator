@@ -42,7 +42,7 @@ def show_graph(
 
 def show_distribution_chart(
         distribution: List[Tuple[int, int]],
-        max_value: None or float,
+        y_range: None or Tuple[float, float],
         filename: None or str
 ):
     """
@@ -50,14 +50,15 @@ def show_distribution_chart(
 
     Args:
         distribution: Distribution as list of tuples (key, value)
-        max_value: Optional max y value (may be defined to make chart visually comparable to other charts)
+        y_range: Optional range of y values
         filename: Name of the file to create or None if file should not be generated
     """
     fig, ax = plt.subplots(1, 1)
     for x, value in distribution:
         ax.plot(x, value, 'bo', ms=8)
         ax.vlines(x, 0, value, colors='b', lw=5, alpha=0.5)
-    if max_value:
-        plt.ylim(0, max_value * 1.1)
+    if y_range:
+        diff = y_range[1] - y_range[0]
+        plt.ylim(y_range[0] - diff * 0.1, y_range[1] + diff * 0.1)
     plt.savefig(filename)
     plt.show()

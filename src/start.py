@@ -2,7 +2,7 @@ from datetime import datetime
 
 from graph_generation import generate_point_positions, generate_simple_random_graph, generate_graphs
 from graph_metrics import calculate_real_mean_degree, calculate_expected_mean_degree, calculate_approximation_error, calculate_real_number_of_edges, calculate_expected_number_of_edges, calculate_real_density, calculate_expected_density, \
-    calculate_expected_degree_distribution, calculate_real_degree_distribution, calculate_graph_components_statistics, calculate_graph_cycle_related_statistics, calculate_mean_clustering
+    calculate_expected_degree_distribution, calculate_real_degree_distribution, calculate_graph_components_statistics, calculate_graph_cycle_related_statistics, calculate_mean_clustering, calculate_degree_distribution_difference
 from graph_visualization import show_graph, create_output_directory, show_distribution_chart
 
 
@@ -16,7 +16,7 @@ def main():
 
     output_directory = create_output_directory("generation_{}".format(datetime.now()))
 
-    perform_long_operations = False
+    perform_long_operations = True
 
     # -------------------------------------------------------------------------------------------------
     # Test graph generation
@@ -100,10 +100,16 @@ def main():
     print(">>>Sprawdzanie rozkładu stopni wierzchołków ...")
     expected_distribution = calculate_expected_degree_distribution(n, r)
     real_distribution = calculate_real_degree_distribution(n, r, graphs)
-    max_value = max(list(map(lambda v: v[1], expected_distribution + real_distribution)))
+    difference = calculate_degree_distribution_difference(real_distribution, expected_distribution)
+    max_value = max(list(map(lambda v: v[1], expected_distribution + real_distribution + difference)))
+    min_value = min(list(map(lambda v: v[1], expected_distribution + real_distribution + difference)))
+    y_range = min_value, max_value
+    print(">>>Generowanie wykresu rozkładu oczekiwanego ...")
+    show_distribution_chart(expected_distribution, y_range, output_directory + "/chart_expected_{}_{}.png".format(n, r))
     print(">>>Generowanie wykresu rozkładu rzeczywistego ...")
-    show_distribution_chart(expected_distribution, max_value, output_directory + "/chart_expected_{}_{}.png".format(n, r))
-    show_distribution_chart(real_distribution, max_value, output_directory + "/chart_real_{}_{}_{}.png".format(n, r, number_of_graphs))
+    show_distribution_chart(real_distribution, y_range, output_directory + "/chart_real_{}_{}_{}.png".format(n, r, number_of_graphs))
+    print(">>>Generowanie różnicy rozkładów ...")
+    show_distribution_chart(difference, y_range, output_directory + "/chart_difference_{}_{}_{}.png".format(n, r, number_of_graphs))
     print()
 
     if perform_long_operations:

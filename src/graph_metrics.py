@@ -229,6 +229,27 @@ def calculate_real_degree_distribution(
     return real_values
 
 
+def calculate_degree_distribution_difference(
+        real_distribution: List,
+        expected_distribution: List
+) -> List:
+    """
+    Calculate degree distribution difference between real and expected.
+
+    Args:
+        real_distribution: Real distribution of degrees.
+        expected_distribution: Expected distribution of degrees.
+
+    Returns:
+        Degree distribution difference.
+    """
+    real_dict = dict(real_distribution)
+    expected_dict = dict(expected_distribution)
+    negative_expected_dict = {x: -expected_dict[x] for x in expected_dict}
+    result = {k: real_dict.get(k, 0) + negative_expected_dict.get(k, 0) for k in set(real_dict) | set(negative_expected_dict)}
+    return list(result.items())
+
+
 def calculate_graph_components_statistics(
         graphs: List[nx.Graph],
 ) -> GraphsComponentsStatistics:
