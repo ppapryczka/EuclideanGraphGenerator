@@ -9,6 +9,8 @@ venv/
 .idea/codeStyles
 .idea/workspace.xml
 
-
 out/
 .pytest_cache
+.coverage
+docs/cov_html/*
+docs/documentation/build/*

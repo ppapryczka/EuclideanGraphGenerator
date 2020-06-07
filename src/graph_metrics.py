@@ -5,7 +5,7 @@ import networkx as nx
 from networkx.algorithms.assortativity.tests.test_correlation import np
 from scipy.stats import binom
 
-from networkx_extensions import connected_component_subgraphs
+from src.networkx_extensions import connected_component_subgraphs
 
 
 class GraphsComponentsStatistics:
