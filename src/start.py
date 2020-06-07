@@ -2,7 +2,8 @@ from datetime import datetime
 
 from graph_generation import generate_point_positions, generate_simple_random_graph, generate_graphs
 from graph_metrics import calculate_real_mean_degree, calculate_expected_mean_degree, calculate_approximation_error, calculate_real_number_of_edges, calculate_expected_number_of_edges, calculate_real_density, calculate_expected_density, \
-    calculate_expected_degree_distribution, calculate_real_degree_distribution, calculate_graph_components_statistics, calculate_graph_cycle_related_statistics, calculate_mean_clustering, calculate_degree_distribution_difference
+    calculate_expected_degree_distribution, calculate_real_degree_distribution, calculate_graph_components_statistics, calculate_graph_cycle_related_statistics, calculate_mean_clustering, calculate_degree_distribution_difference, \
+    calculate_root_mean_square
 from graph_visualization import show_graph, create_output_directory, show_distribution_chart
 
 
@@ -17,7 +18,8 @@ def main():
     output_directory = create_output_directory("generation_{}".format(datetime.now()))
 
     generate_n2_example = False
-    perform_long_operations = True
+    calculate_component_and_tree_stats = True
+    calculate_clustering = True
 
     # -------------------------------------------------------------------------------------------------
     # Test graph generation
@@ -106,6 +108,8 @@ def main():
     expected_distribution = calculate_expected_degree_distribution(n, r)
     real_distribution = calculate_real_degree_distribution(n, r, graphs)
     difference = calculate_degree_distribution_difference(real_distribution, expected_distribution)
+    root_mean_square = calculate_root_mean_square(expected_distribution, real_distribution)
+
     max_value = max(list(map(lambda v: v[1], expected_distribution + real_distribution + difference)))
     min_value = min(list(map(lambda v: v[1], expected_distribution + real_distribution + difference)))
     y_range = min_value, max_value
@@ -117,7 +121,7 @@ def main():
     show_distribution_chart(difference, y_range, output_directory + "/chart_difference_{}_{}_{}.png".format(n, r, number_of_graphs))
     print()
 
-    if perform_long_operations:
+    if calculate_component_and_tree_stats:
         # print("-------------------------------------------------------------------")
         print("Sprawdzanie statystyk dotyczących składowych ...")
         component_stats = calculate_graph_components_statistics(graphs)
@@ -135,7 +139,7 @@ def main():
         print("Liczba cykli bazowych:             {}".format(cycle_stats.mean_number_of_base_cycles))
         print("Średnia długość cyklu:             {}".format(cycle_stats.mean_length_of_base_cycle))
         print()
-
+    if calculate_clustering:
         print("Sprawdzanie klasteryzacji ...")
         mean_clustering = calculate_mean_clustering(graphs)
         print()
@@ -155,7 +159,8 @@ def main():
     print(real_density, file=output)
     print(expected_density, file=output)
     print(density_error, file=output)
-    if perform_long_operations:
+    print(root_mean_square, file=output)
+    if calculate_component_and_tree_stats:
         print(component_stats.mean_number_of_components, file=output)
         print(component_stats.mean_number_of_nodes_in_component, file=output)
         print(component_stats.mean_number_of_edges_in_component, file=output)
@@ -164,6 +169,7 @@ def main():
         print(component_stats.mean_size_of_tree, file=output)
         print(cycle_stats.mean_number_of_base_cycles, file=output)
         print(cycle_stats.mean_length_of_base_cycle, file=output)
+    if calculate_clustering:
         print(mean_clustering, file=output)
     output.close()
 

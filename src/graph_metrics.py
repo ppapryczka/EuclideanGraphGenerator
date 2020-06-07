@@ -250,6 +250,31 @@ def calculate_degree_distribution_difference(
     return list(result.items())
 
 
+def calculate_root_mean_square(
+        expected_distribution: List,
+        real_distribution: List
+) -> float:
+    """
+    Calculate root mean square.
+
+    Args:
+        expected_distribution: Expected distribution.
+        real_distribution: Real distribution.
+
+    Returns:
+        Root mean square.
+    """
+    expected_values = list(map(lambda v: v[1], expected_distribution))
+    real_values = list(map(lambda v: v[1], real_distribution))
+    errors = []
+    for i in range(0, len(expected_values)):
+        errors.append(expected_values[i] - real_values[i])
+    errors2 = list(map(lambda error: error * error, errors))
+    sum_of_square_errors = sum(errors2)
+    root_mean_square = math.sqrt(sum_of_square_errors / len(expected_values))
+    return root_mean_square
+
+
 def calculate_graph_components_statistics(
         graphs: List[nx.Graph],
 ) -> GraphsComponentsStatistics:
